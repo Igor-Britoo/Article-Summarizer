@@ -10,6 +10,7 @@ const Demo = () => {
     summary: ''
   })
   const [allArticles, setAllArticles] = useState([])
+  const [copiedUrl, setCopiedUrl] = useState('')
   const [getSummary, { error, isFetching }] = useLazyGetSummaryQuery()
 
   const handleUrlInputChange = (event) => {
@@ -29,14 +30,20 @@ const Demo = () => {
         summary: response.data.summary
       }
       const updatedAllArticles = [
-        ...allArticles,
-        newArticle
+        newArticle,
+        ...allArticles
       ]
 
       setArticle(newArticle)
       setAllArticles(updatedAllArticles)
       localStorage.setItem('articles', JSON.stringify(updatedAllArticles))
     }
+  }
+
+  const handleCopy = (copyUrl) => {
+    setCopiedUrl(copyUrl)
+    navigator.clipboard.writeText(copyUrl);
+    setTimeout(() => setCopiedUrl(''), 1200);
   }
 
   useEffect(() => {
@@ -87,10 +94,10 @@ const Demo = () => {
               onClick={() => setArticle(article)}
               className="link_card"
             >
-              <div className="copy_btn">
+              <div className="copy_btn" onClick={() => handleCopy(article.url)}>
                 <img 
-                  src={copy} 
-                  alt="copy icon" 
+                  src={copiedUrl === article.url ? tick : copy}
+                  alt={copiedUrl === article.url ? "tick icon" : "copy icon"}
                   className="w-[40%] h-[40%] object-contain" 
                 />
               </div>
@@ -99,6 +106,34 @@ const Demo = () => {
               </p>
             </div>
           ))
+        }
+      </div>
+
+      <div className="flex my-10 max-w-full justify-center items-center">
+        {
+          isFetching ?
+            <img src={loader} alt="loading" className="w-10 h-10 object-contain"/>
+            :
+            error ?
+              <p className="font-inter font-bold text-black text-center">
+                An error occurred while summarizing the article.
+                <br />
+                <span className="font-satoshi font-normal text-gray-700">
+                  {error?.data?.error}
+                </span>
+              </p>
+              :
+              article?.summary && 
+              <div className="flex flex-col gap-4 items-center">
+                <h2 className="font-satoshi font-bold text-gray-600 text-xl">
+                  Article <span className="blue_gradient"> Summary </span>
+                </h2>
+                <div className='summary_box'>
+                  <p className='font-inter font-medium text-sm text-gray-700'>
+                    {article.summary}
+                  </p>
+                </div>
+              </div>
         }
       </div>
     </div>
