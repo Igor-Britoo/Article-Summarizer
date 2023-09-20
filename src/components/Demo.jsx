@@ -2,12 +2,15 @@
 import { useState, useEffect } from "react"
 
 import { copy, linkIcon, loader, tick, enterArrow } from '../assets'
+import { useLazyGetSummaryQuery } from "../services/article"
 
 const Demo = () => {
   const [article, setArticle] = useState({
     url: '',
     summary: ''
   })
+  const [allArticles, setAllArticles] = useState([])
+  const [getSummary] = useLazyGetSummaryQuery()
 
   const handleUrlInputChange = (event) => {
     setArticle(prevState => ({
@@ -16,9 +19,24 @@ const Demo = () => {
     }))
   }
 
-  const handleSubmit = () => {
-    console.log(article)
-    alert('Submitted')
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    const response = await getSummary({ articleUrl: article.url })
+
+    if (response?.data?.summary){
+      const newArticle = {
+        ...article,
+        summary: response.data.summary
+      }
+      const updatedAllArticles = [
+        ...allArticles,
+        newArticle
+      ]
+
+      setArticle(newArticle)
+      setAllArticles(updatedAllArticles)
+    }
+
   }
 
   return (
@@ -26,7 +44,7 @@ const Demo = () => {
     <div className="flex flex-col w-full gap-2">
       <form 
         className="relative flex justify-center items-center"
-        onSubmit={() => { console.log('submitted') }}
+        onSubmit={handleSubmit}
       >
         <img 
           src={linkIcon} 
@@ -46,7 +64,6 @@ const Demo = () => {
         <button 
           type="submit" 
           className="submit_btn peer-focus:border-gray-700 peer-focus:text-gray-700"
-          onClick={handleSubmit}
         >
           <img src={enterArrow} className="w-4" />
         </button>
