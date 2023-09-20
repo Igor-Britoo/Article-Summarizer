@@ -10,7 +10,7 @@ const Demo = () => {
     summary: ''
   })
   const [allArticles, setAllArticles] = useState([])
-  const [getSummary] = useLazyGetSummaryQuery()
+  const [getSummary, { error, isFetching }] = useLazyGetSummaryQuery()
 
   const handleUrlInputChange = (event) => {
     setArticle(prevState => ({
@@ -35,9 +35,18 @@ const Demo = () => {
 
       setArticle(newArticle)
       setAllArticles(updatedAllArticles)
+      localStorage.setItem('articles', JSON.stringify(updatedAllArticles))
     }
-
   }
+
+  useEffect(() => {
+    const articlesFromLocalStorage = JSON.parse(
+      localStorage.getItem('articles')
+    )
+    if (articlesFromLocalStorage) {
+      setAllArticles(articlesFromLocalStorage);
+    }
+  }, [])
 
   return (
   <section className="mt-16 w-full max-w-xl">
@@ -69,6 +78,29 @@ const Demo = () => {
         </button>
 
       </form>
+
+      <div className="flex flex-col gap-1 max-h-60 overflow-y-auto">
+        {
+          allArticles.map((article, index) => (
+            <div
+              key={`link-${index}`}
+              onClick={() => setArticle(article)}
+              className="link_card"
+            >
+              <div className="copy_btn">
+                <img 
+                  src={copy} 
+                  alt="copy icon" 
+                  className="w-[40%] h-[40%] object-contain" 
+                />
+              </div>
+              <p className="flex-1 font-satoshi text-blue-700 font-medium text-sm truncate">
+                {article.url}
+              </p>
+            </div>
+          ))
+        }
+      </div>
     </div>
   </section>
   )
